@@ -1,6 +1,7 @@
 import os
 
 import gspread
+import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 
 import airflow
@@ -9,6 +10,8 @@ import requests.exceptions as requests_exceptions
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
+
+from postgres_tasks import connect_postgres, connect_sqlalchemy
 
 dag = DAG(
    dag_id="read_and_save_sheets_data",
@@ -25,7 +28,7 @@ def connect_sheet():
     client = gspread.authorize(creds)
     return client
 
-def _read_sheet_data():
+def read_sheet_data():
     # Find a workbook by name and open the first sheet
     # Make sure you use the right name here.
     client = connect_sheet()
@@ -33,12 +36,29 @@ def _read_sheet_data():
 
     # Extract and print all of the values
     list_of_hashes = sheet.get_all_records()
-    print(list_of_hashes)
-    return True
+    return list_of_hashes
+
+def _store_data():
+    dbSession, dbCursor = connect_postgres()
+    data = read_sheet_data()
+    df = pd.DataFrame(data)
+    # sqlCreateTable  = "CREATE TABLE IF NOT EXISTS questions(id bigint, question varchar(2000), n_options int, label varchar(20), options varchar(1000), type BOOLEAN, n_answers int);"
+    # # sqlCreateTable  = "CREATE TABLE IF NOT EXISTS questions"
+    # # Create a table in PostgreSQL database
+    # dbCursor.execute(sqlCreateTable)
+    # dbSession.commit()
+    # df.to_sql('questions', con=dbSession)
+    # dbCursor.execute("SELECT * FROM users").fetchall()
+    # df.head(0).to_sql('table_name', engine, if_exists='replace',index=False)
+    # # output = io.StringIO()
+    print('here ...................................')
+    engine = connect_sqlalchemy()
+    df.to_sql('questions', engine)
+    print('i am now..........................')
 
 get_sheets_data = PythonOperator(
    task_id="read_sheets_data",
-   python_callable=_read_sheet_data,
+   python_callable=_store_data,
    dag=dag,
 )
 

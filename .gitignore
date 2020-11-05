@@ -6,4 +6,4 @@
 *.log
 *.pid
 *.db-journal
-client_secret.json
+**/client_secret.json

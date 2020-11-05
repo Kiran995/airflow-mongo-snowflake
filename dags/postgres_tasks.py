@@ -1,5 +1,6 @@
 import pandas
 import psycopg2
+from sqlalchemy import create_engine
 
 def connect_postgres():
     # Open a DB session
@@ -17,5 +18,10 @@ def connect_postgres():
 #
 #     cursor = connection.cursor()
 
+def connect_sqlalchemy():
+    engine = create_engine('postgresql://sysadmin:mypass@localhost:5432/postgres_db')
+    return engine
+
 if __name__ == '__main__':
     connect_postgres()
+    connect_sqlalchemy()
