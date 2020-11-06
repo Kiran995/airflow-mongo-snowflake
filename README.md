@@ -19,4 +19,4 @@ Or run them separately
 `airflow webserver`
 
 6. Open in Webserver
-[title](localhost:8080)
+`localhost:8080`
